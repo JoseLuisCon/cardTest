@@ -1,9 +1,9 @@
-import { ReSize } from "./components/ReSize";
+import { ContainerCard } from "./components/ContainerCard";
 
 function App() {
   return (
     <div className="App">
-      <ReSize />
+      <ContainerCard />
     </div>
   );
 }
