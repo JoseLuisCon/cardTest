@@ -14,20 +14,28 @@ export const SpriteAnimated = ({ x, y, endAnimation, setDestroy }) => {
   let app = useApp();
 
   useEffect(async () => {
-    if (frames.length === 0) {
-      app.loader.add(spritesheet).load((_, resource) => {
-        setFrames(
-          Object.keys(resource[spritesheet].data.frames).map((frame) =>
-            PIXI.Texture.from(frame)
-          )
-        );
-      });
-    }
+    const loadAnimatedSpriteTexture = PIXI.Assets.load(spritesheet);
+
+    loadAnimatedSpriteTexture
+      .then((texture) => {
+        setFrames(texture);
+      })
+      .catch((error) => console.log(error));
+
+    // if (frames.length === 0) {
+    //   app.loader.add(spritesheet).load((_, resource) => {
+    //     setFrames(
+    //       Object.keys(resource[spritesheet].data.frames).map((frame) =>
+    //         PIXI.Texture.from(frame)
+    //       )
+    //     );
+    //   });
+    // }
   }, []);
 
-  useEffect(() => {
-    if (endAnimation) animatedSpt.current?.play();
-  }, [endAnimation]);
+  // useEffect(() => {
+  //   if (endAnimation) animatedSpt.current?.play();
+  // }, [endAnimation]);
 
   if (frames.length === 0) {
     return null;
@@ -43,6 +51,7 @@ export const SpriteAnimated = ({ x, y, endAnimation, setDestroy }) => {
       x={x}
       y={y}
       loop={false}
+      play={true}
       onComplete={() => setDestroy(true)}
     />
   );

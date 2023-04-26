@@ -1,4 +1,4 @@
-import { Container, Sprite, Text, useApp } from "@pixi/react";
+import { AnimatedSprite, Container, Sprite, Text, useApp } from "@pixi/react";
 import React, { useEffect, useRef, useState } from "react";
 
 import * as PIXI from "pixi.js";
@@ -20,10 +20,22 @@ const getOrderZIndex = (id) => {
   }
 };
 
+const getTextureUrl = (key, url) => {
+  //Cargamos de forma asincrona la textura de la imagen
+  PIXI.Assets.load(url)
+    .then((texture) => {
+      const newTexture = {
+        id: key,
+        texture,
+      };
+      return newTexture;
+    })
+    .catch((err) => console.log(err));
+};
+
 export const Card = ({ dataCard, position }) => {
   const [dataImgCard, setDataImgCard] = useState(null);
-
-  const arrayPropsCard = Object.entries(dataCard);
+  const [frames, setFrames] = useState(null);
 
   const textCard = useRef(null);
   const container = useRef(null);
@@ -32,6 +44,8 @@ export const Card = ({ dataCard, position }) => {
   const app = useApp();
 
   useEffect(() => {
+    const arrayPropsCard = Object.entries(dataCard);
+
     arrayPropsCard.map((item, index) => {
       const [key, value] = item;
 
@@ -41,24 +55,24 @@ export const Card = ({ dataCard, position }) => {
         return;
       }
 
-      const loadSprite = PIXI.Assets.load(value);
-      loadSprite
+      // Cargamos la textura de las imagenes desde las urls
+      PIXI.Assets.load(value)
         .then((texture) => {
           const newTexture = {
             id: key,
             texture,
           };
+          if (!newTexture) return;
           // Obtenemos un array con las texturas
           arrayTexture.current = [...arrayTexture.current, newTexture];
-          // Cuando el array de texturas tenga la misma longitud que el array de propiedades de la carta
-          if (arrayPropsCard.length - 1 === 5)
+          arrayTexture.current.length === 5 &&
             setDataImgCard(arrayTexture.current);
         })
         .catch((err) => console.log(err));
     });
 
     return () => {
-      app.stage.removeChild(app.stage.getChildByName("containerCard", true));
+      arrayTexture.current = [];
     };
   }, []);
 
@@ -76,18 +90,17 @@ export const Card = ({ dataCard, position }) => {
         anchor={0.5}
         name={"containerCard"}
       >
-        {dataImgCard?.length === 5 &&
+        {dataImgCard &&
           dataImgCard.map(({ id, texture }, index) => {
             const zIndex = getOrderZIndex(id);
-
             return <Sprite texture={texture} key={index} zIndex={zIndex} />;
           })}
 
         <Text
           text={textCard.current}
           zIndex={9}
-          x={30}
-          y={container.current?.y + container.current?.height - 10}
+          x={80}
+          y={600}
           style={
             new PIXI.TextStyle({
               fontFamily: '"Source Sans Pro", Helvetica, sans-serif',
@@ -95,10 +108,22 @@ export const Card = ({ dataCard, position }) => {
               fill: "white",
               align: "center",
               wordWrap: true,
-              wordWrapWidth: container.current?.width * 2,
+              wordWrapWidth: 300,
             })
           }
         />
+
+        {/* <AnimatedSprite
+          animationSpeed={0.25}
+          scale={{ x: 0.35, y: 0.35 }}
+          isPlaying={false}
+          textures={frames}
+          x={position.x}
+          y={position.y}
+          loop={false}
+          onComplete={() => console.log("finalizdo")}
+          zIndex={10}
+        /> */}
       </Container>
     </>
   );
