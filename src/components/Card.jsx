@@ -2,6 +2,7 @@ import { AnimatedSprite, Container, Sprite, Text, useApp } from "@pixi/react";
 import React, { useEffect, useRef, useState } from "react";
 
 import * as PIXI from "pixi.js";
+import { AnimatedSpriteExplosion } from "./AnimatedSpriteExplosion";
 
 const getOrderZIndex = (id) => {
   switch (id) {
@@ -43,6 +44,13 @@ export const Card = ({ dataCard, position }) => {
 
   const app = useApp();
 
+  const setDestroy = (val) => {
+    if (val)
+      container.current.removeChild(
+        app.stage.getChildByName("animatedSpriteCard", true)
+      );
+  };
+
   useEffect(() => {
     const arrayPropsCard = Object.entries(dataCard);
 
@@ -54,8 +62,6 @@ export const Card = ({ dataCard, position }) => {
         // setTextCard(value);
         return;
       }
-
-      // Cargamos la textura de las imagenes desde las urls
       PIXI.Assets.load(value)
         .then((texture) => {
           const newTexture = {
@@ -113,17 +119,11 @@ export const Card = ({ dataCard, position }) => {
           }
         />
 
-        {/* <AnimatedSprite
-          animationSpeed={0.25}
-          scale={{ x: 0.35, y: 0.35 }}
-          isPlaying={false}
-          textures={frames}
-          x={position.x}
-          y={position.y}
-          loop={false}
-          onComplete={() => console.log("finalizdo")}
+        <AnimatedSpriteExplosion
+          setDestroy={setDestroy}
           zIndex={10}
-        /> */}
+          endAnimation={true}
+        />
       </Container>
     </>
   );
