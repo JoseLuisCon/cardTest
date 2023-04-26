@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
-
 import { useApp } from "@pixi/react";
 
-import { NewCarta } from "./NewCarta";
+import { Carta } from "./Carta";
 
 import sonidoDeleteCard from "../../assets/sound/card-deleted.mp3";
 import sonidoDeleteLastCard from "../../assets/sound/last-card-deleted.mp3";
@@ -54,6 +53,7 @@ export const Baraja = ({ pos, data }) => {
       };
     });
   };
+
   const reDistribution = (arrayIn) => {
     let xBar = pos.x;
     let yBar = pos.y;
@@ -70,8 +70,7 @@ export const Baraja = ({ pos, data }) => {
       } else {
         angle = angle + 2;
       }
-
-      xBar = xBar + 50;
+      xBar = xBar + 60;
       return {
         rot: angle,
         anchor: { x: 0.5, y: 0.7 },
@@ -92,7 +91,6 @@ export const Baraja = ({ pos, data }) => {
     // la que se selecciona se eleva y las demás se bajan. Las de la izquierda se bajan hacia la izquierda
     // y las de la derecha hacia la derecha.
     let newCartasSprite = arraySprite.slice();
-
     newCartasSprite[idCarta].select = true;
     newCartasSprite[idCarta].zIndex = newCartasSprite.length;
 
@@ -140,7 +138,6 @@ export const Baraja = ({ pos, data }) => {
     newCartasSprite = [...cardsLeft, newCartasSprite[idCarta], ...cardsRight];
 
     alpha.current = 1;
-
     return newCartasSprite;
   };
 
@@ -224,7 +221,7 @@ export const Baraja = ({ pos, data }) => {
 
     if (isDragging.current) {
       const newCartasSprite = cartasSprite.map((carta) => {
-        if (carta.id === initialProps.current.id) {
+        if (carta.id === initialProps.current?.id) {
           let { x, y, ...props } = carta;
           const newCart = {
             x: Math.trunc(e.data.global.x),
@@ -240,10 +237,10 @@ export const Baraja = ({ pos, data }) => {
       // //* EFECTO DE DESVANECIMIENTO EN DOS PASOS
       if (
         Math.abs(
-          initialProps.current.y - newCartasSprite[initialProps.current.id].y
+          initialProps.current?.y - newCartasSprite[initialProps.current.id].y
         ) > 300 ||
         Math.abs(
-          initialProps.current.x - newCartasSprite[initialProps.current.id].x
+          initialProps.current?.x - newCartasSprite[initialProps.current.id].x
         ) > 300
       ) {
         alpha.current = 0.5;
@@ -253,7 +250,9 @@ export const Baraja = ({ pos, data }) => {
 
       setCartasSprite(newCartasSprite);
     }
+    //================================    ************************************************************  ================================
     //================================    MANEJO DE LAS CARTAS CUANDO NO SE ENCUENTRAN DRAG AND DROP    ================================
+    //================================    ************************************************************  ================================
     else {
       // Modificamos la referencia a las coordenadas del ratón.
       positionPointer.current = {
@@ -298,11 +297,11 @@ export const Baraja = ({ pos, data }) => {
       //================================    MANEJO DE LAS CARTAS CUANDO NOS DESPLAZAMOS HACIA LA IZQUIERDA    ================================
       else if (
         positionPointer.current.x < e.target?.x - 30 &&
-        positionPointer.current.y <
+        positionPointer.current?.y <
           e.target?.y +
             referenciaSprite.current?.height /
               referenciaSprite.current?.anchor.y &&
-        positionPointer.current.y >
+        positionPointer.current?.y >
           e.target?.y -
             referenciaSprite.current?.height +
             (1 - referenciaSprite.current?.anchor.y)
@@ -329,13 +328,9 @@ export const Baraja = ({ pos, data }) => {
   };
 
   const getNewReferenceSprite = (idCartas) => {
-    const newReferenceSprite = app.stage.getChildByName(
-      "carta" + idCartas,
-      true
-    );
-
-    return newReferenceSprite;
+    return app.stage.getChildByName("carta" + idCartas, true).parent;
   };
+
   const onEnd = () => {
     isDragging.current = false;
 
@@ -349,25 +344,25 @@ export const Baraja = ({ pos, data }) => {
         initialProps.current?.x - cartasSprite[initialProps.current?.id].x
       ) > 300
     ) {
-      // DELETING CARDS  //
+      //! DELETING CARDS  //
 
       if (cartasSprite.length === 1) {
         setCartasSprite([]);
         initSoundDeletedCard(0);
       } else {
         // creamos nuevo array de cartas sin la carta que se ha eliminado
-        let newCartasSprite = cartasSprite.filter(
+        const newCartasSprite = cartasSprite.filter(
           (carta) => carta.id !== initialProps.current.id
         );
 
         // reasignamos los id de las cartas
-        newCartasSprite = newCartasSprite.map(({ id, ...props }, index) => {
-          const newCart = { id: index, ...props };
-          return newCart;
-        });
+        const newCartas = newCartasSprite.map(({ id, ...props }, index) => ({
+          id: index,
+          ...props,
+        }));
 
         // recolocamos las cartas
-        const newArrayCartasRedistribuidas = reDistribution(newCartasSprite);
+        const newArrayCartasRedistribuidas = reDistribution(newCartas);
 
         // Obtenemos el id de la última carta del array
         const chekMaxId =
@@ -376,7 +371,6 @@ export const Baraja = ({ pos, data }) => {
 
         // comprobamos si la carta que se ha eliminado es la última del array
         if (chekMaxId === initialProps.current.id - 1) {
-          // FUNCIONA
           setCartasSprite(
             showSelectedCard(chekMaxId, newArrayCartasRedistribuidas)
           );
@@ -384,12 +378,22 @@ export const Baraja = ({ pos, data }) => {
         } else {
           // Si no es la última carta del array, seleccionamos la carta con el mismo id que la que se ha eliminado
 
-          const newArray = showSelectedCard(
-            initialProps.current.id,
-            newArrayCartasRedistribuidas
+          console.log(" 🌼 ", chekMaxId, newArrayCartasRedistribuidas);
+
+          setCartasSprite(() =>
+            showSelectedCard(
+              initialProps.current.id,
+              newArrayCartasRedistribuidas
+            )
           );
 
-          setCartasSprite(newArray);
+          console.log(
+            " 🌼 🌼 🌼 ",
+            showSelectedCard(
+              initialProps.current.id,
+              newArrayCartasRedistribuidas
+            )
+          );
           referenciaSprite.current = getNewReferenceSprite(
             initialProps.current.id
           );
@@ -397,6 +401,7 @@ export const Baraja = ({ pos, data }) => {
         initSoundDeletedCard(1);
       }
     } else {
+      // Retornamos la carta a su posición inicial con el efecto de rebote y sonido
       effectReturnCarta();
       initSoundDeletedCard(2);
     }
@@ -410,6 +415,7 @@ export const Baraja = ({ pos, data }) => {
     if (cartaSpriteInitial.length !== 0) {
       const newArray = reDistribution(cartaSpriteInitial);
       setCartasSprite(showSelectedCard(0, newArray));
+      initialProps.current = cartasSprite[0];
     }
   }, []);
 
@@ -421,7 +427,7 @@ export const Baraja = ({ pos, data }) => {
     <>
       {cartasSprite.map(
         ({ id, img, x, y, anchor, zIndex, rot, scale, select }) => (
-          <NewCarta
+          <Carta
             id={id}
             key={id}
             image={img}

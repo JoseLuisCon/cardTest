@@ -23,7 +23,6 @@ export const ContainerBaraja = () => {
 
   // POSIBLE SITIO PARA RECIBIR LA DATA (FETCH)
   useEffect(() => {
-    // const mockData = fetch ( https: ...)
     setDataBaraja(mockData);
   }, []);
 

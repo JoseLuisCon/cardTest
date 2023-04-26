@@ -5,6 +5,7 @@ function App() {
   return (
     <div className="App">
       <ContainerBaraja />
+      {/* <ContainerCard /> */}
     </div>
   );
 }
