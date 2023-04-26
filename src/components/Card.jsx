@@ -4,6 +4,10 @@ import React, { useEffect, useRef, useState } from "react";
 import * as PIXI from "pixi.js";
 import { AnimatedSpriteExplosion } from "./AnimatedSpriteExplosion";
 
+const PROPS_CARDS = {
+  scale: { x: 0.35, y: 0.35 },
+  alpha: 1,
+};
 const getOrderZIndex = (id) => {
   switch (id) {
     case "bg-border":
@@ -18,49 +22,40 @@ const getOrderZIndex = (id) => {
       return 5;
     case "text":
       return 6;
+    default:
+      return 0;
   }
-};
-
-const getTextureUrl = (key, url) => {
-  //Cargamos de forma asincrona la textura de la imagen
-  PIXI.Assets.load(url)
-    .then((texture) => {
-      const newTexture = {
-        id: key,
-        texture,
-      };
-      return newTexture;
-    })
-    .catch((err) => console.log(err));
 };
 
 let i = 0;
 export const Card = ({ dataCard, position }) => {
   const [dataImgCard, setDataImgCard] = useState(null);
-  const [scale, setScale] = useState({ x: 0.35, y: 0.35 });
+  const [scale, setScale] = useState(PROPS_CARDS.scale);
   const [animationEnd, setAnimationEnd] = useState(false);
-  const [alpha, setAlpha] = useState(1);
+  const [alpha, setAlpha] = useState(PROPS_CARDS.alpha);
 
   let animatedSpt = useRef(true);
   let animatedExplosion = useRef(null);
 
   const textCard = useRef(null);
   const container = useRef(null);
-  const arrayTexture = useRef([]);
+  const arrayTextures = useRef([]);
+  const tickHookRef = useRef(null);
 
   const app = useApp();
 
   const setDestroy = (val) => {
-    if (val) {
-      console.log("destroy");
-      container.current.parent?.removeChild(
-        app.stage.getChildByName("animatedSpriteCard", true)
-      );
-    }
+    // Apagamos el ticker después la animación de la explosión
+    setTimeout(() => {
+      tickHookRef.current?.stop();
+    }, 1000);
   };
 
-  useTick((delta) => {
+  useTick((delta, ticker) => {
+    tickHookRef.current = ticker;
+
     let contador = scale.x + 0.035; //0.03 nos sirve para retrasar
+
     i += 0.04 * delta;
 
     contador = contador - (Math.sin(i / 10) || 0) * 0.04;
@@ -72,16 +67,16 @@ export const Card = ({ dataCard, position }) => {
       setScale({ x: contador, y: contador });
       setAlpha((alpha) => alpha - 0.015);
     } else {
-      delta = 0;
-      console.log("animationEnd");
       animatedSpt.current = false;
+      contador = scale.x + 0.035;
     }
   });
 
-  useEffect(() => {
-    const arrayPropsCard = Object.entries(dataCard);
+  const getDataImgUrl = (data) => {
+    const arrayPropsCard = Object.entries(data);
+    arrayTextures.current = [];
 
-    arrayPropsCard.map((item, index) => {
+    arrayPropsCard.forEach((item, index) => {
       const [key, value] = item;
 
       if (key === "text") {
@@ -89,6 +84,7 @@ export const Card = ({ dataCard, position }) => {
         // setTextCard(value);
         return;
       }
+      // Cargamos las texturas desde las url
       PIXI.Assets.load(value)
         .then((texture) => {
           const newTexture = {
@@ -97,17 +93,22 @@ export const Card = ({ dataCard, position }) => {
           };
           if (!newTexture) return;
           // Obtenemos un array con las texturas
-          arrayTexture.current = [...arrayTexture.current, newTexture];
-          arrayTexture.current.length === 5 &&
-            setDataImgCard(arrayTexture.current);
+          arrayTextures.current = [...arrayTextures.current, newTexture];
+          arrayTextures.current.length === 5 &&
+            setDataImgCard(arrayTextures.current);
         })
         .catch((err) => console.log(err));
     });
+  };
 
-    return () => {
-      arrayTexture.current = [];
-    };
-  }, []);
+  useEffect(() => {
+    setScale(PROPS_CARDS.scale);
+    setAlpha(PROPS_CARDS.alpha);
+    getDataImgUrl(dataCard);
+    animatedSpt.current = true;
+    tickHookRef.current?.start();
+    console.log("🚀 ~ file: Card.jsx:108 ~ useEffect ~ dataCard:", dataCard);
+  }, [dataCard]);
 
   return (
     <>

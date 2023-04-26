@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { LaunchCardButton } from "./LaunchCardButton";
-import { Sprite, Stage } from "@pixi/react";
+import { Stage } from "@pixi/react";
 import { mockData } from "./data";
 import { Card } from "./Card";
 
@@ -20,9 +20,14 @@ const options = {
 
 export const ContainerCard = () => {
   const [cardSelected, setCardSelected] = useState(null);
+  const contCards = useRef(0);
 
   const initLaunch = () => {
-    setCardSelected(mockData);
+    setCardSelected(mockData[contCards.current]);
+    contCards.current++;
+    if (contCards.current === mockData.length) {
+      contCards.current = 0;
+    }
   };
 
   return (

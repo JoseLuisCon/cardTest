@@ -11,7 +11,7 @@ export const AnimatedSpriteExplosion = ({ x, y, setDestroy, endAnimation }) => {
   const [zIndex, setzIndex] = useState(0);
   const [visible, setVisible] = useState(false);
 
-  let animatedSpt = useRef();
+  let animatedSptExplosion = useRef(null);
 
   useEffect(() => {
     PIXI.Assets.load(spritesheet)
@@ -26,7 +26,7 @@ export const AnimatedSpriteExplosion = ({ x, y, setDestroy, endAnimation }) => {
     if (endAnimation) {
       setVisible(true);
       setzIndex(10);
-      animatedSpt.current?.play();
+      animatedSptExplosion.current?.play();
     }
   }, [endAnimation]);
 
@@ -37,7 +37,7 @@ export const AnimatedSpriteExplosion = ({ x, y, setDestroy, endAnimation }) => {
   return (
     <AnimatedSprite
       scale={0.35}
-      ref={animatedSpt}
+      ref={animatedSptExplosion}
       textures={frames}
       loop={false}
       anchor={0.5}
@@ -47,9 +47,13 @@ export const AnimatedSpriteExplosion = ({ x, y, setDestroy, endAnimation }) => {
       animationSpeed={0.25}
       autoUpdate={true}
       initialFrame={0}
-      onComplete={() => setDestroy(true)}
+      onComplete={() => {
+        setDestroy(true);
+        setFrames([]);
+      }}
       name="animatedSpriteCard"
       zIndex={zIndex}
+
       // playOnce={true}
     />
   );
