@@ -1,4 +1,4 @@
-import { AnimatedSprite, Container, Sprite, Text, useApp } from "@pixi/react";
+import { Container, Sprite, Text, useApp, useTick } from "@pixi/react";
 import React, { useEffect, useRef, useState } from "react";
 
 import * as PIXI from "pixi.js";
@@ -34,9 +34,15 @@ const getTextureUrl = (key, url) => {
     .catch((err) => console.log(err));
 };
 
+let i = 0;
 export const Card = ({ dataCard, position }) => {
   const [dataImgCard, setDataImgCard] = useState(null);
-  const [frames, setFrames] = useState(null);
+  const [scale, setScale] = useState({ x: 0.35, y: 0.35 });
+  const [animationEnd, setAnimationEnd] = useState(false);
+  const [alpha, setAlpha] = useState(1);
+
+  let animatedSpt = useRef(true);
+  let animatedExplosion = useRef(null);
 
   const textCard = useRef(null);
   const container = useRef(null);
@@ -45,11 +51,37 @@ export const Card = ({ dataCard, position }) => {
   const app = useApp();
 
   const setDestroy = (val) => {
-    if (val)
+    if (val) {
       container.current.removeChild(
         app.stage.getChildByName("animatedSpriteCard", true)
       );
+
+      container.current.parent?.removeChild(
+        app.stage.getChildByName("containerCard", true)
+      );
+    }
   };
+
+  useTick((delta) => {
+    let contador = scale.x + 0.035; //0.03 nos sirve para retrasar
+    i += 0.04 * delta;
+
+    contador = contador - (Math.sin(i / 10) || 0) * 0.04;
+
+    if (contador > scale.x && animatedSpt.current) {
+    } else if (scale.x > 0.1 && animatedSpt.current) {
+      console.log("🚀 ~ file: Card.jsx:80 ~ useTick ~ scale.x:", scale.x);
+
+      if (scale.x < 0.19 && scale.x > 0.15) setAnimationEnd(true);
+
+      setScale({ x: contador, y: contador });
+      setAlpha((alpha) => alpha - 0.015);
+    } else {
+      setDestroy(true);
+      contador = 0.35;
+      animatedSpt.current = false;
+    }
+  });
 
   useEffect(() => {
     const arrayPropsCard = Object.entries(dataCard);
@@ -86,27 +118,32 @@ export const Card = ({ dataCard, position }) => {
     <>
       <Container
         ref={container}
-        interactive={true}
-        cursor="pointer"
         sortableChildren={true}
         x={position.x}
         y={position.y}
         angle={0}
-        scale={0.5}
-        anchor={0.5}
-        name={"containerCard"}
+        scale={scale}
+        alpha={alpha}
+        name="containerCard"
       >
         {dataImgCard &&
           dataImgCard.map(({ id, texture }, index) => {
             const zIndex = getOrderZIndex(id);
-            return <Sprite texture={texture} key={index} zIndex={zIndex} />;
+            return (
+              <Sprite
+                texture={texture}
+                key={index}
+                zIndex={zIndex}
+                anchor={0.5}
+              />
+            );
           })}
 
         <Text
           text={textCard.current}
           zIndex={9}
-          x={80}
-          y={600}
+          x={-150}
+          y={200}
           style={
             new PIXI.TextStyle({
               fontFamily: '"Source Sans Pro", Helvetica, sans-serif',
@@ -118,13 +155,16 @@ export const Card = ({ dataCard, position }) => {
             })
           }
         />
-
-        <AnimatedSpriteExplosion
-          setDestroy={setDestroy}
-          zIndex={10}
-          endAnimation={true}
-        />
       </Container>
+      <AnimatedSpriteExplosion
+        ref={animatedExplosion}
+        setDestroy={setDestroy}
+        x={position.x}
+        y={position.y}
+        anchor={0.5}
+        zIndex={10}
+        endAnimation={animationEnd}
+      />
     </>
   );
 };

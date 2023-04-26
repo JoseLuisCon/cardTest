@@ -6,8 +6,10 @@ import { AnimatedSprite, useApp } from "@pixi/react";
 
 const spritesheet = "spritesheet.json";
 
-export const AnimatedSpriteExplosion = ({ setDestroy, endAnimation }) => {
+export const AnimatedSpriteExplosion = ({ x, y, setDestroy, endAnimation }) => {
   const [frames, setFrames] = useState([]);
+  const [zIndex, setzIndex] = useState(0);
+  const [visible, setVisible] = useState(false);
 
   let animatedSpt = useRef();
   let app = useApp();
@@ -22,7 +24,12 @@ export const AnimatedSpriteExplosion = ({ setDestroy, endAnimation }) => {
   }, []);
 
   useEffect(() => {
-    if (endAnimation) animatedSpt.current?.play();
+    console.log(endAnimation);
+    if (endAnimation) {
+      setVisible(true);
+      setzIndex(10);
+      animatedSpt.current?.play();
+    }
   }, [endAnimation]);
 
   if (frames.length === 0) {
@@ -31,17 +38,21 @@ export const AnimatedSpriteExplosion = ({ setDestroy, endAnimation }) => {
 
   return (
     <AnimatedSprite
+      scale={0.35}
+      ref={animatedSpt}
       textures={frames}
-      isPlaying={true}
       loop={false}
-      x={0}
-      y={0}
+      anchor={0.5}
+      x={x}
+      y={y}
+      visible={visible}
       animationSpeed={0.25}
       autoUpdate={true}
       initialFrame={0}
       onComplete={() => setDestroy(true)}
       name="animatedSpriteCard"
-      playOnce={true}
+      zIndex={zIndex}
+      // playOnce={true}
     />
   );
 };
