@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 
 import * as PIXI from "pixi.js";
 
-import { AnimatedSprite, useApp } from "@pixi/react";
+import { AnimatedSprite } from "@pixi/react";
 
 const spritesheet = "spritesheet.json";
 
@@ -12,7 +12,6 @@ export const AnimatedSpriteExplosion = ({ x, y, setDestroy, endAnimation }) => {
   const [visible, setVisible] = useState(false);
 
   let animatedSpt = useRef();
-  let app = useApp();
 
   useEffect(() => {
     PIXI.Assets.load(spritesheet)
@@ -24,7 +23,6 @@ export const AnimatedSpriteExplosion = ({ x, y, setDestroy, endAnimation }) => {
   }, []);
 
   useEffect(() => {
-    console.log(endAnimation);
     if (endAnimation) {
       setVisible(true);
       setzIndex(10);

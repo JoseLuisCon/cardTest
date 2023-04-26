@@ -52,12 +52,9 @@ export const Card = ({ dataCard, position }) => {
 
   const setDestroy = (val) => {
     if (val) {
-      container.current.removeChild(
-        app.stage.getChildByName("animatedSpriteCard", true)
-      );
-
+      console.log("destroy");
       container.current.parent?.removeChild(
-        app.stage.getChildByName("containerCard", true)
+        app.stage.getChildByName("animatedSpriteCard", true)
       );
     }
   };
@@ -70,15 +67,13 @@ export const Card = ({ dataCard, position }) => {
 
     if (contador > scale.x && animatedSpt.current) {
     } else if (scale.x > 0.1 && animatedSpt.current) {
-      console.log("🚀 ~ file: Card.jsx:80 ~ useTick ~ scale.x:", scale.x);
-
       if (scale.x < 0.19 && scale.x > 0.15) setAnimationEnd(true);
 
       setScale({ x: contador, y: contador });
       setAlpha((alpha) => alpha - 0.015);
     } else {
-      setDestroy(true);
-      contador = 0.35;
+      delta = 0;
+      console.log("animationEnd");
       animatedSpt.current = false;
     }
   });
