@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import { useApp } from "@pixi/react";
 
 import { Carta } from "./Carta";
@@ -6,16 +6,18 @@ import { Carta } from "./Carta";
 import sonidoDeleteCard from "../../assets/sound/card-deleted.mp3";
 import sonidoDeleteLastCard from "../../assets/sound/last-card-deleted.mp3";
 import sonidoRebote from "../../assets/sound/rebote.mp3";
+import { contextBaraja } from "../ContainerBaraja";
 
 const TWEEN = require("@tweenjs/tween.js");
 
 const PROPS_CARTA = {
-  scale: { x: 0.25, y: 0.25 },
+  scale: { x: 0.2, y: 0.2 },
   desplazamiento_y: 20,
 };
 
 export const Baraja = ({ pos, data }) => {
   const [cartasSprite, setCartasSprite] = useState([]);
+  const { selectedCard, setSelectedCard } = useContext(contextBaraja);
 
   const isDragging = useRef(false);
   const isRetorning = useRef(false);
@@ -75,7 +77,7 @@ export const Baraja = ({ pos, data }) => {
       } else {
         angle = angle + 0.4;
       }
-      xBar = xBar + 50;
+      xBar = xBar + 45;
       return {
         rot: angle,
         anchor: { x: 0.5, y: 0.6 },
@@ -104,6 +106,10 @@ export const Baraja = ({ pos, data }) => {
       x: PROPS_CARTA.scale.x + 0.035,
       y: PROPS_CARTA.scale.y + 0.035,
     };
+
+    // Seteamos la carta seleccionada en el estado global
+    setSelectedCard(newCartasSprite[idCarta]);
+
     // A ambos lados se situan con un Zindex decreciente
     const zIndexMax = newCartasSprite.length;
 
@@ -202,7 +208,7 @@ export const Baraja = ({ pos, data }) => {
   //* ====================================  FIN EFECTO RETORNO CON LIBRERÍA TWEEN ====================
 
   const onStart = (e) => {
-    console.log("onStart");
+    console.log("onStart", e.data.id);
     if (isRetorning.current) return;
 
     if (cartasSprite[e.target?.id].zIndex !== cartasSprite.length) return;
@@ -232,12 +238,12 @@ export const Baraja = ({ pos, data }) => {
   };
 
   const onMove = (e) => {
+    console.log("onMove", e.data.id);
     if (isRetorning.current) return;
 
     if (!isDragging.current && !initialProps.current) {
       initialProps.current = cartasSprite[e.target.id];
       referenciaSprite.current = e.target;
-      console.log("onMove", initialProps.current);
     }
 
     if (isDragging.current) {
@@ -430,12 +436,12 @@ export const Baraja = ({ pos, data }) => {
     }
   }, []);
 
-  useEffect(() => {
-    if (cartasSprite.length !== 0) {
-      const newArray = reDistribution(cartasSprite);
-      console.log("newArray", newArray);
-    }
-  }, [cartasSprite.length]);
+  // useEffect(() => {
+  //   if (cartasSprite?.length !== 0) {
+  //     const newArray = reDistribution(cartasSprite);
+  //     setCartasSprite(showSelectedCard(referenciaSprite.current.id, newArray));
+  //   }
+  // }, [cartasSprite.length]);
 
   const passRef = (ref) => {
     referenciaSprite.current = ref;
@@ -443,26 +449,28 @@ export const Baraja = ({ pos, data }) => {
 
   return (
     <>
-      {cartasSprite.map(
-        ({ id, img, x, y, anchor, zIndex, rot, scale, select }) => (
-          <Carta
-            id={id}
-            key={id}
-            image={img}
-            position={{ x, y: select ? y - 30 : y }}
-            angle={rot}
-            alpha={initialProps.current?.id === id ? alpha.current : 1}
-            anchor={anchor}
-            zIndex={zIndex}
-            scale={scale}
-            clickStart={onStart}
-            clickEnd={onEnd}
-            mouseMove={onMove}
-            name={"carta" + id}
-            passRef={passRef}
-          />
-        )
-      )}
+      {cartasSprite &&
+        cartasSprite.map(
+          ({ id, img, x, y, anchor, zIndex, rot, scale, select }) => (
+            <Carta
+              id={id}
+              key={id}
+              image={img}
+              position={{ x, y: select ? y - 30 : y }}
+              angle={rot}
+              alpha={initialProps.current?.id === id ? alpha.current : 1}
+              anchor={anchor}
+              zIndex={zIndex}
+              scale={scale}
+              clickStart={onStart}
+              clickEnd={onEnd}
+              mouseMove={onMove}
+              name={"carta" + id}
+              passRef={passRef}
+              visibleText={selectedCard?.id === id ? true : false}
+            />
+          )
+        )}
     </>
   );
 };

@@ -1,7 +1,8 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useContext } from "react";
 import { Container, Sprite, Text } from "@pixi/react";
 
 import * as PIXI from "pixi.js";
+import { contextBaraja } from "../ContainerBaraja";
 
 const getOrderZIndex = (id) => {
   switch (id) {
@@ -36,10 +37,17 @@ export const Carta = ({
   clickEnd,
   mouseMove,
   passRef,
+  visibleText,
 }) => {
-  const referenciaSprite = useRef(null);
   const [imgSprt, setImgSprt] = useState(null);
+  const [propsText, setPropsText] = useState({
+    x: 0,
+    y: 0,
+    width: 80,
+    fontSize: 8,
+  });
 
+  const referenciaSprite = useRef(null);
   const arrayTextures = useRef([]);
   const textCard = useRef(null);
 
@@ -69,7 +77,18 @@ export const Carta = ({
         })
         .catch((err) => console.log(err));
     });
+
     passRef(referenciaSprite.current);
+
+    // Calculamos las proporciones del texto y las seteamos
+
+    setPropsText((prev) => ({
+      ...prev,
+      x: (scale.x * -32) / 0.14,
+      y: 15,
+      width: (scale.x * 75) / 0.16,
+      fontSize: (scale.x * 8) / 0.16,
+    }));
   }, []);
 
   return (
@@ -108,17 +127,25 @@ export const Carta = ({
         <Text
           text={textCard.current}
           zIndex={9}
-          x={-45}
-          y={20}
+          width={propsText.width}
+          x={propsText.x}
+          y={propsText.y}
           angle={angle}
+          visible={visibleText}
           style={
             new PIXI.TextStyle({
-              fontFamily: '"Source Sans Pro", Helvetica, sans-serif',
-              fontSize: 12,
-              fill: "white",
+              fontFamily: [
+                "Roboto",
+                "Source Sans Pro",
+                "Helvetica",
+                "sans-serif",
+              ],
+              fontSize: propsText.fontSize,
+              fill: ["#e4e3e8", "#fdfcff"],
+              stroke: "#eef1f5",
               align: "center",
               wordWrap: true,
-              wordWrapWidth: 100,
+              wordWrapWidth: 50,
             })
           }
         />
