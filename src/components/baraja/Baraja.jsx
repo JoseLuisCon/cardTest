@@ -86,11 +86,12 @@ export const Baraja = ({ pos, data }) => {
   const showSelectedCard = (idCarta = 0, arraySprite) => {
     if (isRetorning.current) return;
 
-    if (!arraySprite) return;
+    if (!arraySprite || !arraySprite[idCarta]) return;
     // Se trata de actualizar el estado de las cartas para que se muestren seleccionadas
     // la que se selecciona se eleva y las demás se bajan. Las de la izquierda se bajan hacia la izquierda
     // y las de la derecha hacia la derecha.
     let newCartasSprite = arraySprite.slice();
+
     newCartasSprite[idCarta].select = true;
     newCartasSprite[idCarta].zIndex = newCartasSprite.length;
 
@@ -188,6 +189,7 @@ export const Baraja = ({ pos, data }) => {
   //* ====================================  FIN EFECTO RETORNO CON LIBRERÍA TWEEN ====================
 
   const onStart = (e) => {
+    console.log("onStart");
     if (isRetorning.current) return;
 
     if (cartasSprite[e.target?.id].zIndex !== cartasSprite.length) return;
@@ -217,7 +219,14 @@ export const Baraja = ({ pos, data }) => {
   };
 
   const onMove = (e) => {
+    console.log("onMove", e.data.global.x, e.data.global.y);
     if (isRetorning.current) return;
+
+    if (!isDragging.current && !initialProps.current) {
+      initialProps.current = cartasSprite[e.target.id];
+      referenciaSprite.current = e.target;
+      console.log("onMove", initialProps.current);
+    }
 
     if (isDragging.current) {
       const newCartasSprite = cartasSprite.map((carta) => {
@@ -335,7 +344,7 @@ export const Baraja = ({ pos, data }) => {
     isDragging.current = false;
 
     if (isRetorning.current) return;
-
+    console.log("onEnd");
     if (
       Math.abs(
         initialProps.current?.y - cartasSprite[initialProps.current?.id].y
@@ -370,6 +379,7 @@ export const Baraja = ({ pos, data }) => {
             .id;
 
         // comprobamos si la carta que se ha eliminado es la última del array
+        console.log("💚", cartasSprite);
         if (chekMaxId === initialProps.current.id - 1) {
           setCartasSprite(
             showSelectedCard(chekMaxId, newArrayCartasRedistribuidas)
@@ -377,23 +387,13 @@ export const Baraja = ({ pos, data }) => {
           referenciaSprite.current = getNewReferenceSprite(chekMaxId);
         } else {
           // Si no es la última carta del array, seleccionamos la carta con el mismo id que la que se ha eliminado
-
-          console.log(" 🌼 ", chekMaxId, newArrayCartasRedistribuidas);
-
-          setCartasSprite(() =>
+          setCartasSprite(
             showSelectedCard(
               initialProps.current.id,
               newArrayCartasRedistribuidas
             )
           );
 
-          console.log(
-            " 🌼 🌼 🌼 ",
-            showSelectedCard(
-              initialProps.current.id,
-              newArrayCartasRedistribuidas
-            )
-          );
           referenciaSprite.current = getNewReferenceSprite(
             initialProps.current.id
           );
@@ -415,9 +415,13 @@ export const Baraja = ({ pos, data }) => {
     if (cartaSpriteInitial.length !== 0) {
       const newArray = reDistribution(cartaSpriteInitial);
       setCartasSprite(showSelectedCard(0, newArray));
-      initialProps.current = cartasSprite[0];
     }
   }, []);
+  useEffect(() => {
+    if (cartasSprite.length !== 0) {
+      const newArray = reDistribution(cartasSprite);
+    }
+  }, [cartasSprite]);
 
   const passRef = (ref) => {
     referenciaSprite.current = ref;

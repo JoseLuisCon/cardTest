@@ -5,18 +5,19 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "command": "npm start",
-      "name": "Run npm start",
+      "type": "chrome",
+      "name": "Launch Chrome against localhost",
       "request": "launch",
-      "type": "node-terminal"
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}"
     },
     {
-      "type": "node",
+      "name": "Launch Angular",
+      "type": "chrome",
       "request": "launch",
-      "name": "Launch Program",
-      "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/src/components/Card.jsx",
-      "outFiles": ["${workspaceFolder}/**/*.js"]
+      "preLaunchTask": "npm: start",
+      "url": "http://localhost:3000/",
+      "webRoot": "${workspaceFolder}"
     }
   ]
 }

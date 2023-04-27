@@ -21,6 +21,11 @@ const options = {
 export const ContainerBaraja = () => {
   const [dataBaraja, setDataBaraja] = useState(mockData);
 
+  const onMoveContainer = (e) => {
+    const { x, y } = e.data.global;
+    console.log(x, y);
+  };
+
   // POSIBLE SITIO PARA RECIBIR LA DATA (FETCH)
   useEffect(() => {
     setDataBaraja(mockData);
@@ -28,7 +33,11 @@ export const ContainerBaraja = () => {
 
   return (
     <Stage {...initialSize} options={options}>
-      <Container sortableChildren={true}>
+      <Container
+        sortableChildren={true}
+        interactive={true}
+        onmousemove={onMoveContainer}
+      >
         <Baraja pos={{ x: 300, y: 400 }} data={dataBaraja} />
       </Container>
     </Stage>
