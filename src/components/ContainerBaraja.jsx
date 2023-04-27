@@ -23,7 +23,6 @@ export const ContainerBaraja = () => {
 
   const onMoveContainer = (e) => {
     const { x, y } = e.data.global;
-    console.log(x, y);
   };
 
   // POSIBLE SITIO PARA RECIBIR LA DATA (FETCH)

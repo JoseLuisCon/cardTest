@@ -9,6 +9,11 @@ import sonidoRebote from "../../assets/sound/rebote.mp3";
 
 const TWEEN = require("@tweenjs/tween.js");
 
+const PROPS_CARTA = {
+  scale: { x: 0.25, y: 0.25 },
+  desplazamiento_y: 20,
+};
+
 export const Baraja = ({ pos, data }) => {
   const [cartasSprite, setCartasSprite] = useState([]);
 
@@ -45,7 +50,7 @@ export const Baraja = ({ pos, data }) => {
       return {
         id: index,
         img: data,
-        scale: { x: 0.25, y: 0.25 },
+        scale: PROPS_CARTA.scale,
         rot: 0,
         zIndex: 0,
         anchor: { x: 0.4, y: 0.8 },
@@ -59,7 +64,7 @@ export const Baraja = ({ pos, data }) => {
     let yBar = pos.y;
 
     let initialAngle =
-      arrayIn.length === 1 ? 0 : Math.trunc(arrayIn.length / 2) * -2;
+      arrayIn.length === 1 ? 0 : Math.trunc(arrayIn.length / 2) * -0.3;
     let angle = initialAngle;
 
     const newCartasSprite = arrayIn.map((carta, index) => {
@@ -68,12 +73,12 @@ export const Baraja = ({ pos, data }) => {
       if (index === 0) {
         angle = initialAngle;
       } else {
-        angle = angle + 2;
+        angle = angle + 0.4;
       }
-      xBar = xBar + 60;
+      xBar = xBar + 50;
       return {
         rot: angle,
-        anchor: { x: 0.5, y: 0.7 },
+        anchor: { x: 0.5, y: 0.6 },
         x: xBar,
         y: yBar,
         ...rest,
@@ -95,6 +100,10 @@ export const Baraja = ({ pos, data }) => {
     newCartasSprite[idCarta].select = true;
     newCartasSprite[idCarta].zIndex = newCartasSprite.length;
 
+    newCartasSprite[idCarta].scale = {
+      x: PROPS_CARTA.scale.x + 0.035,
+      y: PROPS_CARTA.scale.y + 0.035,
+    };
     // A ambos lados se situan con un Zindex decreciente
     const zIndexMax = newCartasSprite.length;
 
@@ -125,6 +134,8 @@ export const Baraja = ({ pos, data }) => {
     for (let index = 0; index < numCartsLeft; index++) {
       cardsLeft[index].select = false;
       cardsLeft[index].zIndex = newZIndex;
+      cardsLeft[index].scale = PROPS_CARTA.scale;
+
       newZIndex++;
     }
 
@@ -133,12 +144,14 @@ export const Baraja = ({ pos, data }) => {
     for (let index = 0; index < numCartsRight; index++) {
       cardsRight[index].select = false;
       cardsRight[index].zIndex = newZIndex;
+      cardsRight[index].scale = PROPS_CARTA.scale;
       newZIndex--;
     }
 
     newCartasSprite = [...cardsLeft, newCartasSprite[idCarta], ...cardsRight];
 
     alpha.current = 1;
+
     return newCartasSprite;
   };
 
@@ -219,7 +232,6 @@ export const Baraja = ({ pos, data }) => {
   };
 
   const onMove = (e) => {
-    console.log("onMove", e.data.global.x, e.data.global.y);
     if (isRetorning.current) return;
 
     if (!isDragging.current && !initialProps.current) {
@@ -379,7 +391,6 @@ export const Baraja = ({ pos, data }) => {
             .id;
 
         // comprobamos si la carta que se ha eliminado es la última del array
-        console.log("💚", cartasSprite);
         if (chekMaxId === initialProps.current.id - 1) {
           setCartasSprite(
             showSelectedCard(chekMaxId, newArrayCartasRedistribuidas)
@@ -387,6 +398,7 @@ export const Baraja = ({ pos, data }) => {
           referenciaSprite.current = getNewReferenceSprite(chekMaxId);
         } else {
           // Si no es la última carta del array, seleccionamos la carta con el mismo id que la que se ha eliminado
+
           setCartasSprite(
             showSelectedCard(
               initialProps.current.id,
@@ -417,11 +429,13 @@ export const Baraja = ({ pos, data }) => {
       setCartasSprite(showSelectedCard(0, newArray));
     }
   }, []);
+
   useEffect(() => {
     if (cartasSprite.length !== 0) {
       const newArray = reDistribution(cartasSprite);
+      console.log("newArray", newArray);
     }
-  }, [cartasSprite]);
+  }, [cartasSprite.length]);
 
   const passRef = (ref) => {
     referenciaSprite.current = ref;
