@@ -239,7 +239,7 @@ export const Baraja = ({ pos, data }) => {
 		console.log("🚀 🚀 on Move", e.target.id);
 		if (isRetorning.current) return;
 
-		if (!initialProps.current) {
+		if (!initialProps.current || !referenciaSprite.current) {
 			initialProps.current = cartasSprite[e.target.id];
 			referenciaSprite.current = e.target;
 		}
@@ -349,8 +349,10 @@ export const Baraja = ({ pos, data }) => {
 				setCartasSprite([]);
 				initSoundDeletedCard(0);
 			} else {
+				// Creamos una copia del array de cartas
+				let newCartasSprite = [...cartasSprite];
 				// creamos nuevo array de cartas sin la carta que se ha eliminado
-				const newCartasSprite = cartasSprite.filter((carta) => carta.id !== initialProps.current.id);
+				newCartasSprite = newCartasSprite.filter((carta) => carta.id !== initialProps.current.id);
 
 				// reasignamos los id de las cartas
 				const newCartas = newCartasSprite.map(({ id, ...props }, index) => ({
@@ -409,10 +411,10 @@ export const Baraja = ({ pos, data }) => {
 	return (
 		<>
 			{cartasSprite &&
-				cartasSprite.map(({ id, img, x, y, anchor, zIndex, rot, scale, select }) => (
+				cartasSprite.map(({ id, img, x, y, anchor, zIndex, rot, scale, select }, index) => (
 					<Carta
 						id={id}
-						key={id}
+						key={index}
 						image={img}
 						position={{ x, y: select ? y - 30 : y }}
 						angle={rot}
