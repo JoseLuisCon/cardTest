@@ -15,6 +15,27 @@ const PROPS_CARTA = {
 	desplazamiento_y: 20,
 };
 
+// Función para reproducir el sonido de los efectos de las cartas
+const initSoundDeletedCard = (selecTrack) => {
+	let audioSelected = "";
+	switch (selecTrack) {
+		case 0:
+			audioSelected = sonidoDeleteLastCard;
+			break;
+		case 1:
+			audioSelected = sonidoDeleteCard;
+			break;
+		case 2:
+			audioSelected = sonidoRebote;
+	}
+
+	const audio = new Audio(audioSelected);
+
+	audio.volume = 0.2;
+	audio.muted = false;
+	audio.play();
+};
+
 export const Baraja = ({ pos, data }) => {
 	const [cartasSprite, setCartasSprite] = useState([]);
 	const { selectedCard, setSelectedCard } = useContext(contextBaraja);
@@ -26,26 +47,6 @@ export const Baraja = ({ pos, data }) => {
 	const positionPointer = useRef({ x: 0, y: 0 });
 	const alpha = useRef(1);
 	const app = useApp();
-
-	const initSoundDeletedCard = (selecTrack) => {
-		let audioSelected = "";
-		switch (selecTrack) {
-			case 0:
-				audioSelected = sonidoDeleteLastCard;
-				break;
-			case 1:
-				audioSelected = sonidoDeleteCard;
-				break;
-			case 2:
-				audioSelected = sonidoRebote;
-		}
-
-		const audio = new Audio(audioSelected);
-
-		audio.volume = 0.2;
-		audio.muted = false;
-		audio.play();
-	};
 
 	const createDataSprite = (mockData) => {
 		return mockData.map((data, index) => {
@@ -161,7 +162,6 @@ export const Baraja = ({ pos, data }) => {
 	//* ====================================  EFECTO RETORNO CON LIBRERÍA TWEEN ====================
 
 	const initReturn = () => {
-		console.log(" 🏀 initReturn ", initReturn);
 		let { x, y, ...props } = initialProps.current;
 
 		const tween = new TWEEN.Tween({
@@ -206,7 +206,6 @@ export const Baraja = ({ pos, data }) => {
 	//* ====================================  FIN EFECTO RETORNO CON LIBRERÍA TWEEN ====================
 
 	const onStart = (e) => {
-		console.log(" 🌵 onStart", e.data.id);
 		if (isRetorning.current) return;
 
 		if (cartasSprite[e.target?.id].zIndex !== cartasSprite.length) return;
@@ -236,7 +235,6 @@ export const Baraja = ({ pos, data }) => {
 	};
 
 	const onMove = (e) => {
-		console.log("🚀 🚀 on Move", e.target.id);
 		if (isRetorning.current) return;
 
 		if (!initialProps.current || !referenciaSprite.current) {
@@ -282,7 +280,7 @@ export const Baraja = ({ pos, data }) => {
 			};
 
 			//Si estamos en la carta inicial y nos desplazamos hacia la derecha no hacemos nada
-			if (e.target?.id === 0 && positionPointer.current.x < e.target?.x - 40) return;
+			if (e.target?.id === 0 && positionPointer.current.x < e.target?.x - 50) return;
 
 			//================================   NOS DESPLAZAMOS HACIA LA DERECHA    ================================
 			if (
@@ -333,9 +331,48 @@ export const Baraja = ({ pos, data }) => {
 	const getNewReferenceSprite = (idCartas) => {
 		return app.stage.getChildByName("carta" + idCartas, true).parent;
 	};
+	//? Borrado de cartas del array
+
+	const onDeleteCard = (idCarta) => {
+		//! DELETING CARDS  //
+
+		if (cartasSprite.length === 1) {
+			setCartasSprite([]);
+			initSoundDeletedCard(0);
+		} else {
+			// Creamos una copia del array de cartas
+			let newCartasSprite = [...cartasSprite];
+			// creamos nuevo array de cartas sin la carta que se ha eliminado
+			newCartasSprite = newCartasSprite.filter((carta) => carta.id !== initialProps.current.id);
+
+			// reasignamos los id de las cartas
+			const newCartas = newCartasSprite.map(({ id, ...props }, index) => ({
+				id: index,
+				...props,
+			}));
+
+			// recolocamos las cartas
+			const newArrayCartasRedistribuidas = reDistribution(newCartas);
+
+			// Obtenemos el id de la última carta del array
+			const chekMaxId = newArrayCartasRedistribuidas[newArrayCartasRedistribuidas.length - 1].id;
+
+			// comprobamos si la carta que se ha eliminado es la última del array
+			if (chekMaxId === initialProps.current.id - 1) {
+				setCartasSprite(showSelectedCard(chekMaxId, newArrayCartasRedistribuidas));
+				referenciaSprite.current = getNewReferenceSprite(chekMaxId);
+			} else {
+				// Si no es la última carta del array, seleccionamos la carta con el mismo id que la que se ha eliminado
+
+				setCartasSprite(showSelectedCard(initialProps.current.id, newArrayCartasRedistribuidas));
+
+				referenciaSprite.current = getNewReferenceSprite(initialProps.current.id);
+			}
+			initSoundDeletedCard(1);
+		}
+	};
 
 	const onEnd = () => {
-		console.log("onEnd");
 		isDragging.current = false;
 
 		if (isRetorning.current) return;
@@ -343,42 +380,7 @@ export const Baraja = ({ pos, data }) => {
 			Math.abs(initialProps.current?.y - cartasSprite[initialProps.current?.id].y) > 300 ||
 			Math.abs(initialProps.current?.x - cartasSprite[initialProps.current?.id].x) > 300
 		) {
-			//! DELETING CARDS  //
-
-			if (cartasSprite.length === 1) {
-				setCartasSprite([]);
-				initSoundDeletedCard(0);
-			} else {
-				// Creamos una copia del array de cartas
-				let newCartasSprite = [...cartasSprite];
-				// creamos nuevo array de cartas sin la carta que se ha eliminado
-				newCartasSprite = newCartasSprite.filter((carta) => carta.id !== initialProps.current.id);
-
-				// reasignamos los id de las cartas
-				const newCartas = newCartasSprite.map(({ id, ...props }, index) => ({
-					id: index,
-					...props,
-				}));
-
-				// recolocamos las cartas
-				const newArrayCartasRedistribuidas = reDistribution(newCartas);
-
-				// Obtenemos el id de la última carta del array
-				const chekMaxId = newArrayCartasRedistribuidas[newArrayCartasRedistribuidas.length - 1].id;
-
-				// comprobamos si la carta que se ha eliminado es la última del array
-				if (chekMaxId === initialProps.current.id - 1) {
-					setCartasSprite(showSelectedCard(chekMaxId, newArrayCartasRedistribuidas));
-					referenciaSprite.current = getNewReferenceSprite(chekMaxId);
-				} else {
-					// Si no es la última carta del array, seleccionamos la carta con el mismo id que la que se ha eliminado
-
-					setCartasSprite(showSelectedCard(initialProps.current.id, newArrayCartasRedistribuidas));
-
-					referenciaSprite.current = getNewReferenceSprite(initialProps.current.id);
-				}
-				initSoundDeletedCard(1);
-			}
+			onDeleteCard();
 		} else {
 			// Retornamos la carta a su posición inicial con el efecto de rebote y sonido
 			effectReturnCarta();
@@ -397,16 +399,18 @@ export const Baraja = ({ pos, data }) => {
 		}
 	}, []);
 
-	// useEffect(() => {
-	//   if (cartasSprite?.length !== 0) {
-	//     const newArray = reDistribution(cartasSprite);
-	//     setCartasSprite(showSelectedCard(referenciaSprite.current.id, newArray));
-	//   }
-	// }, [cartasSprite.length]);
-
 	const passRef = (ref) => {
 		referenciaSprite.current = ref;
 	};
+
+	// const onHandleClick = (e) => {
+	// 	console.log("onHandleClick", e.detail);
+
+	// 	if (e.detail === 2) {
+	// 		onDeleteCard();
+	// 		console.log("onHandleClick", cartasSprite);
+	// 	}
+	// };
 
 	return (
 		<>
@@ -424,6 +428,7 @@ export const Baraja = ({ pos, data }) => {
 						scale={scale}
 						clickStart={onStart}
 						clickEnd={onEnd}
+						// dblClick={onHandleClick}
 						mouseMove={onMove}
 						name={"carta" + id}
 						passRef={passRef}

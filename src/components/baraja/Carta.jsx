@@ -22,7 +22,23 @@ const getOrderZIndex = (id) => {
 	}
 };
 
-export const Carta = ({ id, image, position, name, alpha, angle, anchor, zIndex, scale, clickStart, clickEnd, mouseMove, passRef, visibleText }) => {
+export const Carta = ({
+	id,
+	image,
+	position,
+	name,
+	alpha,
+	angle,
+	anchor,
+	zIndex,
+	scale,
+	clickStart,
+	clickEnd,
+	mouseMove,
+	passRef,
+	visibleText,
+	// dblClick,
+}) => {
 	const [imgSprt, setImgSprt] = useState(null);
 	const [propsText, setPropsText] = useState({
 		x: 0,
@@ -62,12 +78,18 @@ export const Carta = ({ id, image, position, name, alpha, angle, anchor, zIndex,
 		});
 
 		passRef(referenciaSprite.current);
-
+		setPropsText(({ x, y, width, fontSize, ...prev }) => ({
+			x: (scale.x * -32) / 0.14,
+			y: 15,
+			width: (scale.x * 75) / 0.16,
+			fontSize: (scale.x * 8) / 0.16,
+			...prev,
+		}));
 		// Calculamos las proporciones del texto y las seteamos
 	}, [image]);
 
 	useEffect(() => {
-		setPropsText((prev) => ({
+		setPropsText(({ x, y, width, fontSize, ...prev }) => ({
 			x: (scale.x * -32) / 0.14,
 			y: 15,
 			width: (scale.x * 75) / 0.16,
@@ -89,6 +111,7 @@ export const Carta = ({ id, image, position, name, alpha, angle, anchor, zIndex,
 				pointerdown={clickStart}
 				pointerup={clickEnd}
 				pointermove={mouseMove}
+				// onclick={dblClick}
 				cursor="pointer"
 				anchor={anchor}>
 				{imgSprt &&
