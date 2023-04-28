@@ -1,8 +1,11 @@
 import { createContext, useEffect, useRef, useState } from "react";
-import { Container, Graphics, Stage as PixiStage } from "@pixi/react";
+import { Container, Graphics, Stage as PixiStage, useApp } from "@pixi/react";
 
 import { Baraja } from "./baraja/Baraja";
 import { mockData } from "./baraja/data";
+
+import * as PIXI from "pixi.js";
+PIXI.settings.PREFER_ENV = PIXI.ENV.WEBGL2;
 
 const getSize = () => ({
 	width: window.innerWidth,

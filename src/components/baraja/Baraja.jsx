@@ -102,8 +102,8 @@ export const Baraja = ({ pos, data }) => {
 		newCartasSprite[idCarta].zIndex = newCartasSprite.length;
 
 		newCartasSprite[idCarta].scale = {
-			x: PROPS_CARTA.scale.x + 0.035,
-			y: PROPS_CARTA.scale.y + 0.035,
+			x: PROPS_CARTA.scale.x + 0.045,
+			y: PROPS_CARTA.scale.y + 0.045,
 		};
 
 		// Seteamos la carta seleccionada en el estado global
@@ -161,6 +161,7 @@ export const Baraja = ({ pos, data }) => {
 	//* ====================================  EFECTO RETORNO CON LIBRERÍA TWEEN ====================
 
 	const initReturn = () => {
+		console.log(" 🏀 initReturn ", initReturn);
 		let { x, y, ...props } = initialProps.current;
 
 		const tween = new TWEEN.Tween({
@@ -205,7 +206,7 @@ export const Baraja = ({ pos, data }) => {
 	//* ====================================  FIN EFECTO RETORNO CON LIBRERÍA TWEEN ====================
 
 	const onStart = (e) => {
-		console.log("onStart", e.data.id);
+		console.log(" 🌵 onStart", e.data.id);
 		if (isRetorning.current) return;
 
 		if (cartasSprite[e.target?.id].zIndex !== cartasSprite.length) return;
@@ -235,6 +236,7 @@ export const Baraja = ({ pos, data }) => {
 	};
 
 	const onMove = (e) => {
+		console.log("🚀 🚀 on Move", e.target.id);
 		if (isRetorning.current) return;
 
 		if (!initialProps.current) {
@@ -257,7 +259,7 @@ export const Baraja = ({ pos, data }) => {
 				}
 			});
 
-			// //* EFECTO DE DESVANECIMIENTO EN DOS PASOS
+			// //* EFECTO DE DESVANECIMIENTO
 			if (
 				Math.abs(initialProps.current?.y - newCartasSprite[initialProps.current.id].y) > 300 ||
 				Math.abs(initialProps.current?.x - newCartasSprite[initialProps.current.id].x) > 300
@@ -279,12 +281,14 @@ export const Baraja = ({ pos, data }) => {
 				y: Math.trunc(e.data.global.y),
 			};
 
+			//Si estamos en la carta inicial y nos desplazamos hacia la derecha no hacemos nada
+			if (e.target?.id === 0 && positionPointer.current.x < e.target?.x - 40) return;
+
 			//================================   NOS DESPLAZAMOS HACIA LA DERECHA    ================================
 			if (
 				positionPointer.current.x > e.target?.x + 30 &&
 				positionPointer.current?.y < e.target?.y + referenciaSprite.current?.height * (1 - referenciaSprite.current?.anchor?.y) && //Valor de y de la carta levantada
 				positionPointer.current?.y > e.target?.y - referenciaSprite.current?.height * referenciaSprite.current?.anchor?.y //Valor de y de la carta levantada
-				// referenciaSprite.current?.zIndex === e.target?.zIndex
 			) {
 				//Si estamos en la carta final habilitamos la zona para que se seleccione en caso de que no esté seleccionada
 				const checkIdFinal = cartasSprite[cartasSprite.length - 1].id;
@@ -331,10 +335,10 @@ export const Baraja = ({ pos, data }) => {
 	};
 
 	const onEnd = () => {
+		console.log("onEnd");
 		isDragging.current = false;
 
 		if (isRetorning.current) return;
-		console.log("onEnd");
 		if (
 			Math.abs(initialProps.current?.y - cartasSprite[initialProps.current?.id].y) > 300 ||
 			Math.abs(initialProps.current?.x - cartasSprite[initialProps.current?.id].x) > 300
